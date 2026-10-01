@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FitBuddy</title><link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main class="container">
+<section class="hero"><p class="eyebrow">FITBUDDY</p><h1>Your personal fitness planning assistant.</h1>
+<p>Create a profile and generate a practical workout, nutrition and recovery plan.</p></section>
+<section class="card"><h2>Create your profile</h2>
+{% if error %}<div class="error">{{ error }}</div>{% endif %}
+<form method="post" action="/create-profile">
+<label>Name<input name="name" required maxlength="100"></label>
+<label>Age<input name="age" type="number" min="13" max="120" required></label>
+<label>Goal<select name="goal"><option>General fitness</option><option>Strength</option><option>Endurance</option><option>Mobility</option><option>Healthy routine</option></select></label>
+<label>Fitness level<select name="fitness_level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></label>
+<label>Days per week<input name="days_per_week" type="number" min="1" max="7" value="3" required></label>
+<label>Equipment<input name="equipment" value="None" maxlength="200"></label>
+<button type="submit">Create My Plan</button>
+</form></section>
+</main>
+</body></html>

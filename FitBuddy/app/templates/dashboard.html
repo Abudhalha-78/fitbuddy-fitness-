@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FitBuddy Dashboard</title><link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main class="container">
+<a href="/" class="back">← New profile</a>
+<section class="hero"><p class="eyebrow">DASHBOARD</p><h1>Hi, {{ profile.name }}.</h1>
+<p>{{ profile.goal }} · {{ profile.fitness_level }} · {{ profile.days_per_week }} days/week</p></section>
+<section class="card"><h2>Generate plan</h2><button id="generate">Generate / Refresh Plan</button><p id="status"></p></section>
+{% if plan %}
+<section class="card"><h2>{{ plan.summary }}</h2><p><strong>Equipment:</strong> {{ plan.equipment }}</p>
+<div class="grid">{% for workout in plan.workouts %}<article class="workout">
+<h3>{{ workout.day }} — {{ workout.focus }}</h3><ul>{% for exercise in workout.exercises %}<li>{{ exercise }}</li>{% endfor %}</ul>
+<p>{{ workout.note }}</p></article>{% endfor %}</div>
+<h3>Nutrition</h3><ul>{% for item in plan.nutrition %}<li>{{ item }}</li>{% endfor %}</ul>
+<h3>Recovery</h3><ul>{% for item in plan.recovery %}<li>{{ item }}</li>{% endfor %}</ul>
+</section>{% endif %}
+
+<section class="card feedback-card">
+<h2>Share Your Feedback</h2>
+<p>We value your feedback! Your suggestions and experiences help us improve FitBuddy and make it more useful and user-friendly.</p>
+<p class="feedback-help">Please share your thoughts about how easy the application is to use, your experience with the fitness features, the usefulness of the recommendations, any problems you encountered, or features you would like us to add.</p>
+<form id="feedback-form">
+<label for="feedback-message">Your feedback
+<textarea id="feedback-message" name="message" rows="6" maxlength="2000" required placeholder="Tell us what you think about FitBuddy..."></textarea>
+</label>
+<button type="submit" id="feedback-submit">Submit Feedback</button>
+<p id="feedback-status" role="status" aria-live="polite"></p>
+</form>
+</section>
+</main>
+<script>
+document.getElementById("generate").addEventListener("click", async () => {
+ const button=document.getElementById("generate"), status=document.getElementById("status");
+ button.disabled=true; status.textContent="Generating...";
+ try {
+  const response=await fetch("/api/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:{{ profile.id }}})});
+  if(!response.ok) throw new Error("Request failed"); location.reload();
+ } catch(e) { status.textContent="Could not generate the plan."; button.disabled=false; }
+});
+document.getElementById("feedback-form").addEventListener("submit", async (event) => {
+ event.preventDefault();
+ const button=document.getElementById("feedback-submit");
+ const status=document.getElementById("feedback-status");
+ const message=document.getElementById("feedback-message").value.trim();
+ if(!message) return;
+ button.disabled=true; status.textContent="Submitting...";
+ try {
+  const response=await fetch("/api/feedback", {
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({user_id:{{ profile.id }}, message})
+  });
+  const data=await response.json();
+  if(!response.ok) throw new Error(data.detail || "Request failed");
+  status.textContent="Thank you! Your feedback has been submitted successfully.";
+  document.getElementById("feedback-message").value="";
+ } catch(e) {
+  status.textContent="Could not submit your feedback. Please try again.";
+ } finally {
+  button.disabled=false;
+ }
+});
+</script>
+</body></html>
